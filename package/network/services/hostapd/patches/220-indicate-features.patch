@@ -47,8 +47,8 @@ Subject: [PATCH] hostapd: support optional argument for the -v switch of
  
  	for (;;) {
  		c = getopt(argc, argv,
--			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:No:O:p:P:qsTtuvWyz:");
-+			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:No:O:p:P:qsTtuv::Wyz:");
+-			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:No:O:p:P:qsTtuvWx:yz:");
++			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:No:O:p:P:qsTtuv::Wx:yz:");
  		if (c < 0)
  			break;
  		switch (c) {

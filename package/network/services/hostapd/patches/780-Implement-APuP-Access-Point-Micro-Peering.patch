@@ -54,9 +54,9 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 --- a/hostapd/config_file.c
 +++ b/hostapd/config_file.c
 @@ -5255,6 +5255,15 @@ static int hostapd_config_fill(struct ho
- #endif /* CONFIG_IEEE80211BE */
- 	} else if (os_strcmp(buf, "i2r_lmr_policy") == 0) {
- 		conf->i2r_lmr_policy = atoi(pos);
+ 	} else if (os_strcmp(buf, "enable_dscp_policy_capa") == 0) {
+ 		bss->enable_dscp_policy_capa = atoi(pos);
+ #endif /* CONFIG_ROBUST_AV */
 +#ifdef CONFIG_APUP
 +	} else if (os_strcmp(buf, "apup") == 0) {
 +		bss->apup = !!atoi(pos);
@@ -72,9 +72,9 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 --- a/src/ap/ap_config.h
 +++ b/src/ap/ap_config.h
 @@ -1024,6 +1024,35 @@ struct hostapd_bss_config {
- 	unsigned int pmksa_caching_privacy:1;
- 	unsigned int eap_using_authentication_frames:1;
- #endif /* CONFIG_ENC_ASSOC  */
+ 	int *security_profiles; /* -1 terminated array of enabled security
+ 				 * profiles */
+ 	u64 rsnxe_capab_mask;
 +
 +#ifdef CONFIG_APUP
 +	/**
@@ -110,7 +110,7 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 --- a/src/ap/ap_drv_ops.c
 +++ b/src/ap/ap_drv_ops.c
 @@ -392,13 +392,39 @@ int hostapd_set_wds_sta(struct hostapd_d
- 			const u8 *addr, int aid, int val)
+ 			const u8 *addr, int ifname_id, int val)
  {
  	const char *bridge = NULL;
 +	char ifName[IFNAMSIZ + 1];
@@ -124,13 +124,13 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 +	if (hapd->conf->apup && hapd->conf->apup_peer_ifname_prefix[0]) {
 +		mRet = os_snprintf(
 +		            ifName, sizeof(ifName), "%s%d",
-+		            hapd->conf->apup_peer_ifname_prefix, aid);
++		            hapd->conf->apup_peer_ifname_prefix, ifname_id);
 +	}
 +	else
 +#endif // def CONFIG_APUP
 +		mRet = os_snprintf(
 +		            ifName, sizeof(ifName), "%s.sta%d",
-+		            hapd->conf->iface, aid);
++		            hapd->conf->iface, ifname_id);
 +
 +	if (mRet >= (int) sizeof(ifName))
 +		wpa_printf(MSG_WARNING,
@@ -144,7 +144,7 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 +
  	if (hapd->conf->wds_bridge[0])
  		bridge = hapd->conf->wds_bridge;
- 	return hapd->driver->set_wds_sta(hapd->drv_priv, addr, aid, val,
+ 	return hapd->driver->set_wds_sta(hapd->drv_priv, addr, ifname_id, val,
 -					 bridge, ifname_wds);
 +					 bridge, ifName);
  }
@@ -160,11 +160,11 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 +/** @param val as per nl80211 driver implementation, 1 means add 0 means remove
 + */
  int hostapd_set_wds_sta(struct hostapd_data *hapd, char *ifname_wds,
- 			const u8 *addr, int aid, int val);
+ 			const u8 *addr, int ifname_id, int val);
  int hostapd_sta_add(struct hostapd_data *hapd,
 --- /dev/null
 +++ b/src/ap/apup.c
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,181 @@
 +/*
 + * hostapd / APuP Access Point Micro Peering
 + *
@@ -238,7 +238,7 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 +	/* First add the station without more information */
 +	int aRet = hostapd_sta_add(
 +	            hapd, mgmt->bssid, sta_ret->aid, 0,
-+	            NULL, 0, 0, NULL, NULL, NULL, 0, NULL, 0, NULL,
++	            NULL, 0, 0, NULL, NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
 +	            sta_ret->flags, 0, 0, 0,
 +	            0, // 0 add, 1 set
 +	            mld_link_addr, mld_link_sta, eml_cap, epp_sta);
@@ -282,6 +282,10 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 +	                   elems->he_capabilities, elems->he_capabilities_len,
 +	                   elems->eht_capabilities, elems->eht_capabilities_len);
 +#endif //def CONFIG_IEEE80211BE
++#ifdef CONFIG_IEEE80211BN
++	copy_sta_uhr_capab(hapd, sta_ret, IEEE80211_MODE_AP,
++	                  elems->uhr_capabilities, elems->uhr_capabilities_len);
++#endif /* CONFIG_IEEE80211BN */
 +
 +	update_ht_state(hapd, sta_ret);
 +
@@ -310,6 +314,7 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 +	            sta_ret->vht_capabilities,
 +	            sta_ret->he_capab, sta_ret->he_capab_len,
 +	            sta_ret->eht_capab, sta_ret->eht_capab_len,
++	            sta_ret->uhr_capab, sta_ret->uhr_capab_len,
 +	            sta_ret->he_6ghz_capab,
 +	            sta_ret->flags,
 +	            0, // u8 qosinfo
@@ -428,7 +433,7 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 @@ -4548,7 +4548,7 @@ struct wpa_driver_ops {
  	 * Returns: 0 on success, -1 on failure
  	 */
- 	int (*set_wds_sta)(void *priv, const u8 *addr, int aid, int val,
+ 	int (*set_wds_sta)(void *priv, const u8 *addr, int ifname_id, int val,
 -			   const char *bridge_ifname, char *ifname_wds);
 +			   const char *bridge_ifname, const char *ifname_wds);
  
@@ -462,5 +467,5 @@ Hotfix-by: Sebastian Gottschall https://github.com/mirror/dd-wrt/commit/0c3001a6
 -		os_strlcpy(ifname_wds, name, IFNAMSIZ + 1);
 -
  	wpa_printf(MSG_DEBUG, "nl80211: Set WDS STA addr=" MACSTR
- 		   " aid=%d val=%d name=%s", MAC2STR(addr), aid, val, name);
+ 		   " aid=%d val=%d name=%s", MAC2STR(addr), ifname_id, val, name);
  	if (val) {

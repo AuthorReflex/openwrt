@@ -244,14 +244,6 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
  	aes-internal.o \
  	aes-internal-dec.o \
  	aes-internal-enc.o \
-@@ -37,6 +147,7 @@ LIB_OBJS= \
- 	sha1-tlsprf.o \
- 	sha1-tprf.o \
- 	sha256.o \
-+	sha256-kdf.o \
- 	sha256-prf.o \
- 	sha256-tlsprf.o \
- 	sha256-internal.o \
 @@ -53,6 +164,16 @@ LIB_OBJS += crypto_internal-modexp.o
  LIB_OBJS += crypto_internal-rsa.o
  LIB_OBJS += tls_internal.o
@@ -412,9 +404,9 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
  {
  #ifndef CONFIG_FIPS
 @@ -2591,6 +2724,7 @@ int crypto_module_tests(void)
- 	    test_fips186_2_prf() ||
  	    test_extract_expand_hkdf() ||
  	    test_hpke() ||
+ 	    test_ml_kem() ||
 +	    test_ecc() ||
  	    test_ms_funcs())
  		ret = -1;
@@ -455,7 +447,7 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
 +	test-md4 test-rc4 test-sha1 test-sha256 \
 +	test-milenage test-aes \
 +	test-crypto_module \
- 	test-bss
+ 	test-bss test-mle
  
 +ALL=$(RUN_TESTS) test-base64 test-https test-https_server
 +
@@ -536,7 +528,7 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
  TEST=test-base64
  include test.mk
  
-@@ -143,18 +190,11 @@ OBJS_test-bss=$(WPA_OBJS)
+@@ -143,19 +190,11 @@ OBJS_test-bss=$(WPA_OBJS)
  include test.mk
  
  run-tests: $(ALL)
@@ -548,6 +540,7 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
 -	./test-sha1
 -	./test-sha256
 -	./test-bss
+ 	./test-mle
 +	@set -ex; for i in $(RUN_TESTS); do ./$$i; done
  	@echo
  	@echo All tests completed successfully.

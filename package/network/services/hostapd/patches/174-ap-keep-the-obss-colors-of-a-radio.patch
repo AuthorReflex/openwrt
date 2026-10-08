@@ -289,9 +289,9 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
 --- a/src/ap/sta_info.h
 +++ b/src/ap/sta_info.h
 @@ -359,6 +359,11 @@ struct sta_info {
- #ifdef CONFIG_IEEE8021X_AUTH
- 	struct eap_over_auth_data eap_auth_data;
- #endif /* CONFIG_IEEE8021X_AUTH */
+ 	u8 unsolicited_dialog_token;
+ 	struct dscp_policy_state dscp_state;
+ #endif /* CONFIG_ROBUST_AV */
 +
 +#ifdef CONFIG_IEEE80211AX
 +	/* last BSS Color In Use report, 0 for none */

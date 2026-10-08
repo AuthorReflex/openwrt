@@ -28,6 +28,6 @@ instead rely entirely on netifd handling this properly
  		bridge = hapd->conf->wds_bridge;
 -	else if (hapd->conf->bridge[0])
 -		bridge = hapd->conf->bridge;
- 	return hapd->driver->set_wds_sta(hapd->drv_priv, addr, aid, val,
+ 	return hapd->driver->set_wds_sta(hapd->drv_priv, addr, ifname_id, val,
  					 bridge, ifname_wds);
  }

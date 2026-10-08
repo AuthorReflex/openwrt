@@ -306,8 +306,8 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  				     struct mld_info *info,
  				     bool include_mld_id)
  {
--	return hostapd_eid_eht_ml_len(info, include_mld_id, false);
-+	return hostapd_eid_eht_ml_len(info, include_mld_id, false) +
+-	return hostapd_eid_eht_ml_len(hapd, info, include_mld_id, false);
++	return hostapd_eid_eht_ml_len(hapd, info, include_mld_id, false) +
 +		hostapd_eid_eht_reconf_ml_len(hapd);
  }
  

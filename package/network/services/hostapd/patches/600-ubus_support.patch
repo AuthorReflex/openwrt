@@ -689,8 +689,8 @@ probe/assoc/auth requests via object subscribe.
  
  	for (;;) {
  		c = getopt(argc, argv,
--			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:No:O:p:P:qsTtuv::Wyz:");
-+			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:nNo:O:p:P:qsTtuv::Wyz:");
+-			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:No:O:p:P:qsTtuv::Wx:yz:");
++			   "b:Bc:C:D:de:f:g:G:hi:I:KLMm:nNo:O:p:P:qsTtuv::Wx:yz:");
  		if (c < 0)
  			break;
  		switch (c) {
