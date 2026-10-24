@@ -920,8 +920,8 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
  
  def run_ext_cert_check(dev, apdev, net_id):
 -    check_ext_cert_check_support(dev[0])
--    if not openssl_imported:
--        raise HwsimSkip("OpenSSL python method not available")
+-    if not cryptography_imported:
+-        raise HwsimSkip("cryptography python module not available")
 -
      params = hostapd.wpa2_eap_params(ssid="test-wpa2-eap")
      hapd = hostapd.add_ap(apdev[0], params)
