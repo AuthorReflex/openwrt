@@ -74,12 +74,3 @@ Subject: [PATCH] Allow HT40 also on 2.4GHz if noscan option is set, which also
  	u8 channel;
  	bool is_6ghz, is_24ghz;
  	bool dfs_enabled = wpa_s->conf->country[0] && (wpa_s->drv_flags & WPA_DRIVER_FLAGS_RADAR);
-@@ -3629,6 +3629,8 @@ void ibss_mesh_setup_freq(struct wpa_sup
- 		freq->he_enabled = ibss_mesh_can_use_he(wpa_s, ssid, mode,
- 							ieee80211_mode);
- 	freq->channel = channel;
-+	if (mode->mode == HOSTAPD_MODE_IEEE80211G && ssid->noscan)
-+		ibss_mesh_select_40mhz(wpa_s, ssid, mode, freq, obss_scan, is_6ghz, dfs_enabled);
- 	/* Setup higher BW only for 5 and 6 GHz */
- 	if (mode->mode == HOSTAPD_MODE_IEEE80211A) {
- 		ibss_mesh_select_40mhz(wpa_s, ssid, mode, freq, obss_scan,

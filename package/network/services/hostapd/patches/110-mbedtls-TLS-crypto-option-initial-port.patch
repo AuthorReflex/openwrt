@@ -177,7 +177,7 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
  
  ifdef NEED_MD5
  ifdef CONFIG_INTERNAL_MD5
-@@ -1109,56 +1167,81 @@ ifneq ($(CONFIG_TLS), openssl)
+@@ -1109,59 +1167,81 @@ ifneq ($(CONFIG_TLS), openssl)
  ifneq ($(CONFIG_TLS), linux)
  ifneq ($(CONFIG_TLS), gnutls)
  ifneq ($(CONFIG_TLS), wolfssl)
@@ -205,19 +205,19 @@ Signed-off-by: Glenn Strauss <gstrauss@gluelogic.com>
  endif
 +endif
  ifdef NEED_HMAC_SHA256_KDF
-+CFLAGS += -DCONFIG_HMAC_SHA256_KDF
+ CFLAGS += -DCONFIG_HMAC_SHA256_KDF
 +ifneq ($(CONFIG_TLS), mbedtls)
  OBJS += ../src/crypto/sha256-kdf.o
  endif
 +endif
  ifdef NEED_HMAC_SHA384_KDF
-+CFLAGS += -DCONFIG_HMAC_SHA384_KDF
+ CFLAGS += -DCONFIG_HMAC_SHA384_KDF
 +ifneq ($(CONFIG_TLS), mbedtls)
  OBJS += ../src/crypto/sha384-kdf.o
  endif
 +endif
  ifdef NEED_HMAC_SHA512_KDF
-+CFLAGS += -DCONFIG_HMAC_SHA512_KDF
+ CFLAGS += -DCONFIG_HMAC_SHA512_KDF
 +ifneq ($(CONFIG_TLS), mbedtls)
  OBJS += ../src/crypto/sha512-kdf.o
  endif
