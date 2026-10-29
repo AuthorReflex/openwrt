@@ -36,11 +36,11 @@ Signed-off-by: Peter Oh <peter.oh@bowerswilkins.com>
  	}
  
 @@ -3222,7 +3225,7 @@ static void ibss_mesh_select_40mhz(struc
- 				   const struct wpa_ssid *ssid,
  				   struct hostapd_hw_modes *mode,
  				   struct hostapd_freq_params *freq,
--				   int obss_scan, bool is_6ghz)
-+				   int obss_scan, bool is_6ghz, bool dfs_enabled)
+ 				   int obss_scan, bool is_6ghz,
+-				   int ieee80211_mode, bool is_24ghz)
++				   int ieee80211_mode, bool is_24ghz, bool dfs_enabled)
  {
  	int chan_idx;
  	struct hostapd_channel_data *pri_chan = NULL, *sec_chan = NULL;
@@ -139,15 +139,18 @@ Signed-off-by: Peter Oh <peter.oh@bowerswilkins.com>
  
  	freq->freq = ssid->frequency;
  
-@@ -3620,9 +3632,9 @@ void ibss_mesh_setup_freq(struct wpa_sup
+@@ -3620,12 +3632,12 @@ void ibss_mesh_setup_freq(struct wpa_sup
+ 	req->channel = channel;
+ 
+ 	ibss_mesh_select_40mhz(wpa_s, ssid, mode, freq, obss_scan, is_6ghz,
+-			       ieee80211_mode, is_24ghz);
++			       ieee80211_mode, is_24ghz, dfs_enabled);
+ 
  	/* Setup higher BW only for 5 and 6 GHz */
  	if (mode->mode == HOSTAPD_MODE_IEEE80211A) {
- 		ibss_mesh_select_40mhz(wpa_s, ssid, mode, freq, obss_scan,
--				       is_6ghz);
-+				       is_6ghz, dfs_enabled);
  		if (!ibss_mesh_select_80_160mhz(wpa_s, ssid, mode, freq,
--						ieee80211_mode, is_6ghz))
-+						ieee80211_mode, is_6ghz, dfs_enabled))
- 			freq->he_enabled = freq->vht_enabled = false;
- 	}
- 
+-						ieee80211_mode, is_6ghz)) {
++						ieee80211_mode, is_6ghz, dfs_enabled)) {
+ 			freq->eht_enabled = false;
+ 			freq->he_enabled = false;
+ 			freq->vht_enabled = false;
